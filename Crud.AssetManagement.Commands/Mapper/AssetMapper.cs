@@ -16,7 +16,11 @@ namespace Crud.AssetManagement.Commands.Mapper
                 .ForMember(dest => dest.InitialColorMeter, opt => opt.MapFrom(src => src.AssetMeter != null ? src.AssetMeter.InitialColorMeter : (int?)null))
                 .ForMember(dest => dest.InitialBwMeter, opt => opt.MapFrom(src => src.AssetMeter != null ? src.AssetMeter.InitialBwMeter : (int?)null));
 
+            // AssetId is NHibernate's identifier and CreatedDate is set once on insert;
+            // neither may be overwritten on a loaded entity.
             CreateMap<UpdateAssetCommand, AssetModel>()
+                .ForMember(dest => dest.AssetId, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
                 .ForMember(dest => dest.InitialColorMeter, opt => opt.MapFrom(src => src.AssetMeter != null ? src.AssetMeter.InitialColorMeter : (int?)null))
                 .ForMember(dest => dest.InitialBwMeter, opt => opt.MapFrom(src => src.AssetMeter != null ? src.AssetMeter.InitialBwMeter : (int?)null));
         }

@@ -1,3 +1,4 @@
+using NHibernate;
 using Crud.AssetManagement.Infrastructure.Contracts.Asset;
 using Crud.AssetManagement.Infrastructure.Utils;
 
@@ -7,7 +8,8 @@ namespace Crud.AssetManagement.Infrastructure.Repositories.Asset
     {
         public IAssetRepository AssetRepository { get; }
 
-        public AssetUnitOfWork(IAssetRepository assetRepository)
+        public AssetUnitOfWork(ISession session, IAssetRepository assetRepository)
+            : base(session)
         {
             AssetRepository = assetRepository;
         }

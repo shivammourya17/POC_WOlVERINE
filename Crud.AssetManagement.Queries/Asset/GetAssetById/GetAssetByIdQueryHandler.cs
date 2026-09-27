@@ -1,12 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
 using Crud.AssetManagement.Infrastructure.Contracts;
 using Crud.AssetManagement.Queries.Shared;
 
 namespace Crud.AssetManagement.Queries.Asset.GetAssetById
 {
-    public class GetAssetByIdQueryHandler : BaseQueryHandler, IRequestHandler<GetAssetByIdQuery, GetAssetByIdQueryResult>
+    public class GetAssetByIdQueryHandler : BaseQueryHandler
     {
         private readonly IDbConnectionFactory _connectionFactory;
 

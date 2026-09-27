@@ -2,13 +2,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using CSharpFunctionalExtensions;
-using MediatR;
 using Crud.AssetManagement.Commands.Utils;
 using Crud.AssetManagement.Infrastructure.Contracts.Asset;
 
 namespace Crud.AssetManagement.Commands.Asset
 {
-    public class UpdateAssetCommandHandler : IRequestHandler<UpdateAssetCommand, Result<string>>
+    public class UpdateAssetCommandHandler
     {
         private readonly IAssetUnitOfWork _assetUnitOfWork;
         private readonly IMapper _mapper;
@@ -29,6 +28,7 @@ namespace Crud.AssetManagement.Commands.Asset
             }
 
             _mapper.Map(request, model);
+            model.MarkUpdated();
 
             await _assetUnitOfWork.FlushAsync();
 

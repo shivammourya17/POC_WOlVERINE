@@ -1,34 +1,50 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using NHibernate;
+using NHibernate.Linq;
 
 namespace Crud.AssetManagement.Infrastructure.Utils
 {
-    // Lightweight stand-in for the shared Crud BaseRepository<T>.
-    // Swap the internals for the real shared implementation (NHibernate session, etc.)
-    // once this module is wired into the actual data-access package.
+    // NHibernate-backed base repository. Changes are written to the database when the
+    // owning unit of work calls FlushAsync.
     public abstract class BaseRepository<TModel> where TModel : class
     {
-        private readonly List<TModel> _store = new List<TModel>();
+        protected ISession Session { get; }
 
-        protected virtual Task AddAsync(TModel model)
+        protected BaseRepository(ISession session)
         {
-            _store.Add(model);
-            return Task.CompletedTask;
+            Session = session;
         }
 
-        protected virtual Task<TModel> FindByIdAsync(int id)
+        protected virtual async Task AddAsync(TModel model)
         {
-            return Task.FromResult(_store.Count > 0 ? _store[0] : null);
+            await Session.SaveAsync(model);
         }
 
-        protected virtual Task<IList<TModel>> FindListAsync(int perPage, int page)
+        protected virtual async Task<TModel> FindByIdAsync(int id)
         {
-            return Task.FromResult((IList<TModel>)_store);
+            return await Session.GetAsync<TModel>(id);
         }
 
-        protected virtual Task SaveChangesAsync()
+        protected virtual async Task<TModel> FindAsync(Specification<TModel> specification)
         {
-            return Task.CompletedTask;
+            return await Session.Query<TModel>()
+                .Where(specification.ToExpression())
+                .SingleOrDefaultAsync();
+        }
+
+        protected virtual async Task<IList<TModel>> FindListAsync(IQueryable<TModel> query, int perPage, int page)
+        {
+            return await query
+                .Skip((page - 1) * perPage)
+                .Take(perPage)
+                .ToListAsync();
+        }
+
+        protected virtual async Task SaveChangesAsync()
+        {
+            await Session.FlushAsync();
         }
     }
 }

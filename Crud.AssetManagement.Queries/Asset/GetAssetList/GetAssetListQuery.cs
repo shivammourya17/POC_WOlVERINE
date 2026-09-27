@@ -1,9 +1,8 @@
-using MediatR;
 using Crud.AssetManagement.Queries.Shared;
 
 namespace Crud.AssetManagement.Queries.Asset.GetAssetList
 {
-    public class GetAssetListQuery : BaseQueryPagination, IRequest<GetAssetListQueryResult>
+    public class GetAssetListQuery : BaseQueryPagination, IQuery<GetAssetListQueryResult>
     {
         public int? ClientId { get; set; }
 

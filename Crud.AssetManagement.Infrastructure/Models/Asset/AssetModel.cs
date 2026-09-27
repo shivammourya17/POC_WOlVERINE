@@ -33,6 +33,12 @@ namespace Crud.AssetManagement.Infrastructure.Models.Asset
 
         public AssetModel()
         {
+            CreatedDate = DateTime.UtcNow;
+        }
+
+        public virtual void MarkUpdated()
+        {
+            UpdatedDate = DateTime.UtcNow;
         }
 
         public virtual void Delete()

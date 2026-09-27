@@ -1,35 +1,30 @@
-using System.Threading;
-using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using MediatR;
 using Crud.AssetManagement.Commands.Utils;
 using Crud.AssetManagement.DTOs.Asset.Enum;
 
 namespace Crud.AssetManagement.Commands.Asset.Decorators
 {
-    // Pipeline behavior that runs before AddAssetCommandHandler.
-    // Registered as a closed generic in CommandsServiceExtensions since the
-    // constraint ties it to AddAssetCommand specifically (same shape as the
-    // org's ValidateAssetObjectDecorator).
-    public class ValidateAssetObjectDecorator<TRequest> : IPipelineBehavior<TRequest, Result<string>>
-        where TRequest : AddAssetCommand
+    // Wolverine middleware that runs before AddAssetCommandHandler (replaces the MediatR
+    // IPipelineBehavior). Applied to AddAssetCommand only, in CommandsWolverineExtensions.
+    //
+    // Wolverine middleware cannot short-circuit with a response value: returning
+    // HandlerContinuation.Stop makes InvokeAsync<Result<string>> return default(Result<string>),
+    // which reads as a success. So the validation Result is returned instead, and Wolverine
+    // passes it into AddAssetCommandHandler.Handle, which returns the failure.
+    public static class ValidateAssetObjectDecorator
     {
-        public ValidateAssetObjectDecorator()
-        {
-        }
-
-        public async Task<Result<string>> Handle(TRequest request, RequestHandlerDelegate<Result<string>> next, CancellationToken cancellationToken)
+        public static Result Before(AddAssetCommand request)
         {
             if (request.AssetTypeId == (int)AssetType.Other && request.AssetMeter != null)
             {
-                return Result.Failure<string>(CommandMessageResource.INVALID_ASSETMETER_DETAILS);
+                return Result.Failure(CommandMessageResource.INVALID_ASSETMETER_DETAILS);
             }
             else if ((request.AssetTypeId == (int)AssetType.Copier || request.AssetTypeId == (int)AssetType.Printer) && request.AssetMeter == null)
             {
-                return Result.Failure<string>(string.Format(CommandMessageResource.NOT_EXISTS, CommandMessageResource.ASSET_METER));
+                return Result.Failure(string.Format(CommandMessageResource.NOT_EXISTS, CommandMessageResource.ASSET_METER));
             }
 
-            return await next();
+            return Result.Success();
         }
     }
 }

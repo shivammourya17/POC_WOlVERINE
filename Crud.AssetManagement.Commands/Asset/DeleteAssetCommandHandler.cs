@@ -1,13 +1,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using MediatR;
 using Crud.AssetManagement.Commands.Utils;
 using Crud.AssetManagement.Infrastructure.Contracts.Asset;
 
 namespace Crud.AssetManagement.Commands.Asset
 {
-    public class DeleteAssetCommandHandler : IRequestHandler<DeleteAssetCommand, Result<string>>
+    public class DeleteAssetCommandHandler
     {
         private readonly IAssetUnitOfWork _assetUnitOfWork;
 
