@@ -1,17 +1,17 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Crud.AssetManagement.Infrastructure.Contracts;
+using NHibernate;
 using Crud.AssetManagement.Queries.Shared;
 
 namespace Crud.AssetManagement.Queries.Asset.GetAssetById
 {
     public class GetAssetByIdQueryHandler : BaseQueryHandler
     {
-        private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ISession _session;
 
-        public GetAssetByIdQueryHandler(IDbConnectionFactory connectionFactory)
+        public GetAssetByIdQueryHandler(ISession session)
         {
-            _connectionFactory = connectionFactory;
+            _session = session;
         }
 
         public async Task<GetAssetByIdQueryResult> Handle(GetAssetByIdQuery request, CancellationToken cancellationToken)
@@ -39,12 +39,12 @@ namespace Crud.AssetManagement.Queries.Asset.GetAssetById
                         WHERE
                             1 = 1
                             AND A.DeletedDate IS NULL
-                            AND A.AssetId = @AssetId";
+                            AND A.AssetId = :AssetId";
 
             var queryBuilder = new QueryBuilder(sql)
                 .SetParameter("AssetId", request.AssetId);
 
-            return await queryBuilder.ExecuteSingleAsync<GetAssetByIdQueryResult>(_connectionFactory);
+            return await queryBuilder.ExecuteSingleAsync<GetAssetByIdQueryResult>(_session);
         }
     }
 }

@@ -1,17 +1,17 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Crud.AssetManagement.Infrastructure.Contracts;
+using NHibernate;
 using Crud.AssetManagement.Queries.Shared;
 
 namespace Crud.AssetManagement.Queries.Asset.GetAssetList
 {
     public class GetAssetListQueryHandler : BaseQueryHandler
     {
-        private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ISession _session;
 
-        public GetAssetListQueryHandler(IDbConnectionFactory connectionFactory)
+        public GetAssetListQueryHandler(ISession session)
         {
-            _connectionFactory = connectionFactory;
+            _session = session;
         }
 
         public async Task<GetAssetListQueryResult> Handle(GetAssetListQuery request, CancellationToken cancellationToken)
@@ -41,23 +41,23 @@ namespace Crud.AssetManagement.Queries.Asset.GetAssetList
             var offset = (request.Page - 1) * request.PerPage;
 
             var queryBuilder = new QueryBuilder(sql)
-                .AppendLineIf(request.ClientId.HasValue && request.ClientId > 0, " AND A.ClientId = @ClientId")
+                .AppendLineIf(request.ClientId.HasValue && request.ClientId > 0, " AND A.ClientId = :ClientId")
                 .SetConditionalParameter("ClientId", request.ClientId)
 
                 .AppendLineIf(!string.IsNullOrEmpty(request.Q), @" AND (
-                                              A.AssetNo LIKE '%' + @Q + '%'
-                                              OR A.Manufacturer LIKE '%' + @Q + '%'
-                                              OR A.SerialNo LIKE '%' + @Q + '%'
-                                              OR A.AssetTagNo LIKE '%' + @Q + '%'
-                                              OR A.Location LIKE '%' + @Q + '%')")
+                                              A.AssetNo LIKE '%' + :Q + '%'
+                                              OR A.Manufacturer LIKE '%' + :Q + '%'
+                                              OR A.SerialNo LIKE '%' + :Q + '%'
+                                              OR A.AssetTagNo LIKE '%' + :Q + '%'
+                                              OR A.Location LIKE '%' + :Q + '%')")
                 .SetConditionalParameter("Q", request.Q)
 
                 .AppendLine(" ORDER BY A.AssetId DESC")
-                .AppendLine(" OFFSET @Offset ROWS FETCH NEXT @PerPage ROWS ONLY")
+                .AppendLine(" OFFSET :Offset ROWS FETCH NEXT :PerPage ROWS ONLY")
                 .SetParameter("Offset", offset)
                 .SetParameter("PerPage", request.PerPage);
 
-            var items = await queryBuilder.ExecuteListAsync<AssetListItem>(_connectionFactory);
+            var items = await queryBuilder.ExecuteListAsync<AssetListItem>(_session);
 
             return new GetAssetListQueryResult
             {

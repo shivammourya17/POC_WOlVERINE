@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NHibernate;
-using Crud.AssetManagement.Infrastructure.Contracts;
 using Crud.AssetManagement.Infrastructure.Contracts.Asset;
 using Crud.AssetManagement.Infrastructure.Contracts.Category;
 using Crud.AssetManagement.Infrastructure.Repositories.Asset;
@@ -19,6 +18,7 @@ namespace Crud.AssetManagement.Infrastructure.Extensions
 
             // One session per scope. Wolverine opens a scope per message, so each command
             // handler gets its own session shared by the repository and the unit of work.
+            // Query handlers use the same scoped session for their raw-SQL QueryBuilder.
             services.AddScoped<ISession>(sp => sp.GetRequiredService<ISessionFactory>().OpenSession());
 
             services.AddScoped<IAssetRepository, AssetRepository>();
@@ -26,9 +26,6 @@ namespace Crud.AssetManagement.Infrastructure.Extensions
 
             services.AddScoped<IAssetCategoryRepository, AssetCategoryRepository>();
             services.AddScoped<IAssetCategoryUnitOfWork, AssetCategoryUnitOfWork>();
-
-            // Backs the raw-SQL QueryBuilder used by the Queries project.
-            services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
 
             return services;
         }
